@@ -15,6 +15,13 @@ private:
   // 게임 판을 나타내는 배열
   // board[x][y]가 true 인 경우 x, y 위치에 고정된 블록이 존재하는 것을 의미한다
   bool board_[BOARD_WIDTH][BOARD_HEIGHT];
+  int tick;
+
+  void inputKey();
+
+  void drawGameBox();
+  void drawNextBox();
+  void drawHoldBox();
 
 public:
   // 게임의 한 프레임을 처리한다.
