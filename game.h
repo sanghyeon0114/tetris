@@ -16,8 +16,20 @@ private:
   // board[x][y]가 true 인 경우 x, y 위치에 고정된 블록이 존재하는 것을 의미한다
   bool board_[BOARD_WIDTH][BOARD_HEIGHT];
   int tick;
+  int lineCount;
+  Tetromino randomTetro[7] = {Tetromino::I, Tetromino::O, Tetromino::T, Tetromino::S, Tetromino::Z, Tetromino::J, Tetromino::L};
+  Tetromino tetro = Tetromino::I, next = Tetromino::I, *hold;
+  int tetroPosition[2];
 
+  Tetromino getRandomTetromino();
+
+  bool checkTetrominoPosition(Tetromino tetro, int x);
   void inputKey();
+  void printLineCount(int lineCount);
+  void printTime();
+  void printTetromino();
+  void printNextTetromino();
+  void printHoldTetromino();
 
   void drawGameBox();
   void drawNextBox();

@@ -1,9 +1,42 @@
 #include "game.h"
 #include "console/console.h"
 
+#include <random>
+
+Tetromino Game::getRandomTetromino() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dis(0, 6);
+    return randomTetro[dis(gen)];
+}
+
 Game::Game() {
-    // Todo: board 처리
+    for(int i = 0; i < BOARD_WIDTH; i++) {
+        for(int j = 0; j < BOARD_HEIGHT; j++) {
+            board_[i][j] = false;
+        }
+    }
     tick = 0;
+    lineCount = 40;
+
+    tetro = Game::getRandomTetromino();
+    next = Game::getRandomTetromino();
+    hold = nullptr;
+    tetroPosition[0] = (BOARD_WIDTH/2-tetro.size()/2)+1;
+    tetroPosition[1] = 1;
+}
+
+bool Game::checkTetrominoPosition(Tetromino tetro, int x) {
+    for(int i = 0; i < tetro.size(); i++) {
+        for(int j = 0; j < tetro.size(); j++) {
+            if(tetro.check(i, j)) {
+                if(!(x+i >= 1 && x+i <= BOARD_WIDTH)) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
 }
 
 void Game::inputKey() {
@@ -12,9 +45,13 @@ void Game::inputKey() {
     } else if(console::key(console::K_OTHER)) {
 
     } else if(console::key(console::K_LEFT)) {
-
+        if(Game::checkTetrominoPosition(tetro, tetroPosition[0]-1)) {
+            tetroPosition[0]--;
+        }
     } else if(console::key(console::K_RIGHT)) {
-
+        if(Game::checkTetrominoPosition(tetro, tetroPosition[0]+1)) {
+            tetroPosition[0]++;
+        }
     } else if(console::key(console::K_UP)) {
 
     } else if(console::key(console::K_DOWN)) {
@@ -22,23 +59,66 @@ void Game::inputKey() {
     } else if(console::key(console::K_ESC)) {
         exit(0);
     } else if(console::key(console::K_SPACE)) {
-
+        
     } else if(console::key(console::K_Z)) {
-
+        Tetromino tmp = tetro.rotatedCCW();
+        if(Game::checkTetrominoPosition(tmp, tetroPosition[0])) {
+            tetro = tmp;
+        }
     } else if(console::key(console::K_X)) {
-
+        Tetromino tmp = tetro.rotatedCW();
+        if(Game::checkTetrominoPosition(tmp, tetroPosition[0])) {
+            tetro = tmp;
+        }
     } else if(console::key(console::K_ENTER)) {
         
     }
 }
 
+void Game::printLineCount(int lineCount) {
+    std::string result = std::to_string(lineCount) + " lines left";
+    console::draw(0, BOARD_HEIGHT+2, result);
+}
+
+void Game::printTime() {
+    // Todo
+}
+
+void Game::printTetromino() {
+    tetro.drawAt(BLOCK_STRING, tetroPosition[0], tetroPosition[1]);
+}
+
+void Game::printNextTetromino() {
+    int nextBoxPos = (BOARD_WIDTH+1)+3;
+    int boxSize = 5;
+    next.drawAt(BLOCK_STRING, (nextBoxPos + (boxSize-next.size())/2), next.name().compare("I") == 0 ? 1 : 2);
+}
+
+void Game::printHoldTetromino() {
+    if(hold == nullptr) {
+        return;
+    }
+    int holdBoxPos = ((BOARD_WIDTH+1)+2+5)+2;
+    int boxSize = 5;
+    hold->drawAt(BLOCK_STRING, (holdBoxPos + (boxSize-hold->size())/2), hold->name().compare("I") == 0 ? 1 : 2);
+}
+
 // 게임의 한 프레임을 처리한다.
 void Game::update() {
     // input Code.
+    Game::printLineCount(lineCount);
+    Game::printTime();
+
+    Game::printTetromino();
+    Game::printNextTetromino();
+    Game::printHoldTetromino();
+
     Game::inputKey();
+    
     if(++tick == DROP_DELAY) {
         // input Code 2.
         tick = 0;
+        tetroPosition[1]++;
     }
 }
 
