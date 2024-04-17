@@ -48,11 +48,7 @@ bool Game::checkTetrominoPosition(Tetromino tetro, int x, int y) {
 }
 
 void Game::inputKey() {
-    if(console::key(console::K_NONE)) {
-
-    } else if(console::key(console::K_OTHER)) {
-
-    } else if(console::key(console::K_LEFT)) {
+    if(console::key(console::K_LEFT)) {
         if(Game::checkTetrominoPosition(tetro, tetroPosition[0]-1, tetroPosition[1])) {
             tetroPosition[0]--;
         }
@@ -94,8 +90,6 @@ void Game::inputKey() {
         if(Game::checkTetrominoPosition(tmp, tetroPosition[0], tetroPosition[1])) {
             tetro = tmp;
         }
-    } else if(console::key(console::K_ENTER)) {
-        
     }
 }
 
