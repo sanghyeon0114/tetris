@@ -15,13 +15,15 @@ private:
   // 게임 판을 나타내는 배열
   // board[x][y]가 true 인 경우 x, y 위치에 고정된 블록이 존재하는 것을 의미한다
   bool board_[BOARD_WIDTH][BOARD_HEIGHT];
+  std::chrono::system_clock::time_point startTime;
   int tick;
   int lineCount;
   Tetromino randomTetro[7] = {Tetromino::I, Tetromino::O, Tetromino::T, Tetromino::S, Tetromino::Z, Tetromino::J, Tetromino::L};
   Tetromino tetro = Tetromino::I, next = Tetromino::I, *hold;
   int tetroPosition[2];
+  int shadowPosition[2];
   bool canHold = true;
-
+  
   Tetromino getRandomTetromino();
   void makeNextTetromino();
 
@@ -34,9 +36,10 @@ private:
   void printHoldTetromino();
   void printGroundTetromino();
   void printFinishedTetromino();
+  void checkAndRemoveLine(int y);
+  void removeLines();
+  void printShadow();
   bool isTetrominoGround();
-  int checkGroundLines();
-  void removeGroundLines();
 
   void drawGameBox();
   void drawNextBox();

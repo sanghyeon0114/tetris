@@ -33,6 +33,7 @@ Game::Game() {
     hold = nullptr;
     tetroPosition[0] = (BOARD_WIDTH/2-tetro.size()/2)+1;
     tetroPosition[1] = 1;
+    startTime = std::chrono::system_clock::now();
 }
 
 bool Game::checkTetrominoPosition(Tetromino tetro, int x, int y) {
@@ -62,7 +63,9 @@ void Game::inputKey() {
             tetroPosition[0]++;
         }
     } else if(console::key(console::K_UP)) {
-
+        tetroPosition[0] = shadowPosition[0];
+        tetroPosition[1] = shadowPosition[1];
+        tick = DROP_DELAY;
     } else if(console::key(console::K_DOWN)) {
         if(Game::checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1]+1)) {
             tetroPosition[1]++;
@@ -104,8 +107,32 @@ void Game::printLineCount() {
 }
 
 void Game::printTime() {
-    // Todo
-}
+    std::chrono::system_clock::time_point endTime = std::chrono::system_clock::now();
+    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+    
+    std::string result;
+    int minutes = ((ms.count()/1000)/60);
+    if(minutes < 10) {
+        result.append("0");
+    }
+    result.append(std::to_string(minutes));
+    result.append(":");
+
+    int second = (ms.count()/1000)%60;
+    if(second < 10) {
+        result.append("0");
+    }
+    result.append(std::to_string(second));
+    result.append(".");
+
+    int millisecond = (ms.count()/10)%100;
+    if(millisecond < 10) {
+        result.append("0");
+    }
+    result.append(std::to_string(millisecond));
+    
+    console::draw(BOARD_WIDTH/2-result.length()/2+1, BOARD_HEIGHT+3, result);
+}   
 
 void Game::printTetromino() {
     tetro.drawAt(BLOCK_STRING, tetroPosition[0], tetroPosition[1]);
@@ -146,43 +173,45 @@ void Game::printFinishedTetromino() {
     }
 }
 
-bool Game::isTetrominoGround() {
-    return !checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1]+1);
-}
-
-int Game::checkGroundLines() {
-    int count = 0;
-    for(int i = BOARD_HEIGHT-1; i >= 0; i--) {
-        for(int j = 0; j < BOARD_WIDTH; j++) {
-            if(!board_[j][i]) {
-                return count;
-            }
+void Game::checkAndRemoveLine(int y) {
+    for(int i = 0; i < BOARD_WIDTH; i++) {
+        if(!board_[i][y]) {
+            return;
         }
-        count++;
     }
-    return count;
-}
 
-void Game::removeGroundLines() {
-    int removeLineCount = Game::checkGroundLines();
-    if(removeLineCount == 0) {
-        return;
-    }
-    for(int i = BOARD_HEIGHT-1; i >= removeLineCount ; i--) {
+    for(int i = y; i > 0; i--) {
         for(int j = 0; j < BOARD_WIDTH; j++) {
             board_[j][i] = board_[j][i-1];
         }
     }
-    for(int i = 0; i < BOARD_HEIGHT; i++) {
-        for(int j = 0; j < removeLineCount; j++) {
-            board_[j][i] = false;
-        }
+    for(int i = 0; i < BOARD_WIDTH; i++) {
+        board_[i][0] = false;
     }
-    lineCount -= removeLineCount;
-    if(lineCount < 0) {
-        lineCount = 0;
+    lineCount--;
+}
+
+void Game::removeLines() {
+    for(int i = 0; i < BOARD_HEIGHT; i++) {
+        Game::checkAndRemoveLine(i);
     }
 }
+
+void Game::printShadow() {
+    shadowPosition[0] = tetroPosition[0];
+    shadowPosition[1] = tetroPosition[1];
+
+    while(checkTetrominoPosition(tetro, shadowPosition[0], shadowPosition[1]+1)) {
+        shadowPosition[1]++;
+    }
+
+    tetro.drawAt(SHADOW_STRING, shadowPosition[0], shadowPosition[1]);
+}
+
+bool Game::isTetrominoGround() {
+    return !checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1]+1);
+}
+
 
 // 게임의 한 프레임을 처리한다.
 void Game::update() {
@@ -190,6 +219,7 @@ void Game::update() {
     Game::printLineCount();
     Game::printTime();
 
+    Game::printShadow();
     Game::printTetromino();
     Game::printNextTetromino();
     Game::printHoldTetromino();
@@ -197,12 +227,11 @@ void Game::update() {
 
     Game::inputKey();
     
-    if(++tick == DROP_DELAY) {
-        // input Code 2.
+    if(++tick >= DROP_DELAY) {
         tick = 0;
         if(Game::isTetrominoGround()) {
             Game::printFinishedTetromino();
-            Game::removeGroundLines();
+            Game::removeLines();
             Game::makeNextTetromino();
             if(!Game::checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1])) {
                 // Todo : Lose!
