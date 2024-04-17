@@ -27,7 +27,7 @@ private:
 
   bool checkTetrominoPosition(Tetromino tetro, int x, int y);
   void inputKey();
-  void printLineCount(int lineCount);
+  void printLineCount();
   void printTime();
   void printTetromino();
   void printNextTetromino();
@@ -35,6 +35,8 @@ private:
   void printGroundTetromino();
   void printFinishedTetromino();
   bool isTetrominoGround();
+  int checkGroundLines();
+  void removeGroundLines();
 
   void drawGameBox();
   void drawNextBox();

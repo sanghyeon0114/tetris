@@ -3,6 +3,8 @@
 
 #include <random>
 
+// Todo 2 : Up 키 누르면 바로 설치
+
 Tetromino Game::getRandomTetromino() {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -76,6 +78,8 @@ void Game::inputKey() {
                 Tetromino tmp = tetro;
                 tetro = *hold;
                 hold = tmp.original();
+                tetroPosition[0] = (BOARD_WIDTH/2-tetro.size()/2)+1;
+                tetroPosition[1] = 1;
             }
             canHold = false;
         }
@@ -94,7 +98,7 @@ void Game::inputKey() {
     }
 }
 
-void Game::printLineCount(int lineCount) {
+void Game::printLineCount() {
     std::string result = std::to_string(lineCount) + " lines left";
     console::draw(0, BOARD_HEIGHT+2, result);
 }
@@ -146,10 +150,44 @@ bool Game::isTetrominoGround() {
     return !checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1]+1);
 }
 
+int Game::checkGroundLines() {
+    int count = 0;
+    for(int i = BOARD_HEIGHT-1; i >= 0; i--) {
+        for(int j = 0; j < BOARD_WIDTH; j++) {
+            if(!board_[j][i]) {
+                return count;
+            }
+        }
+        count++;
+    }
+    return count;
+}
+
+void Game::removeGroundLines() {
+    int removeLineCount = Game::checkGroundLines();
+    if(removeLineCount == 0) {
+        return;
+    }
+    for(int i = BOARD_HEIGHT-1; i >= removeLineCount ; i--) {
+        for(int j = 0; j < BOARD_WIDTH; j++) {
+            board_[j][i] = board_[j][i-1];
+        }
+    }
+    for(int i = 0; i < BOARD_HEIGHT; i++) {
+        for(int j = 0; j < removeLineCount; j++) {
+            board_[j][i] = false;
+        }
+    }
+    lineCount -= removeLineCount;
+    if(lineCount < 0) {
+        lineCount = 0;
+    }
+}
+
 // 게임의 한 프레임을 처리한다.
 void Game::update() {
     // input Code.
-    Game::printLineCount(lineCount);
+    Game::printLineCount();
     Game::printTime();
 
     Game::printTetromino();
@@ -164,11 +202,13 @@ void Game::update() {
         tick = 0;
         if(Game::isTetrominoGround()) {
             Game::printFinishedTetromino();
+            Game::removeGroundLines();
             Game::makeNextTetromino();
             if(!Game::checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1])) {
                 // Todo : Lose!
                 exit(0);
             }
+            canHold = true;
         } else {
             tetroPosition[1]++;
         }
@@ -176,7 +216,6 @@ void Game::update() {
 }
 
 void Game::drawGameBox() {
-    // can use [1 ~ BOARD_WIDTH][1 ~ BOARD_HEIGHT]
     console::drawBox(0, 0, BOARD_WIDTH+1, BOARD_HEIGHT+1);
 }
 
@@ -196,7 +235,6 @@ void Game::drawHoldBox() {
     console::draw(startPosX+1, startPosY, "Hold");
 }
 
-// 게임 화면을 그린다.
 void Game::draw() {
     Game::drawGameBox();
     Game::drawNextBox();
