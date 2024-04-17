@@ -228,13 +228,16 @@ void Game::printLostMessage() {
 }
 
 bool Game::isWin() {
-    return lineCount == 0;
+    if(lineCount <= 0) {
+        lineCount = 0;
+        return true;
+    }
+    return false;
 }
 
 void Game::update() {
     Game::printLineCount();
     Game::printTime();
-
     Game::printShadow();
     Game::printTetromino();
     Game::printNextTetromino();
@@ -260,6 +263,7 @@ void Game::update() {
     }
     if(Game::isWin()) {
         Game::printWinMessage();
+        Game::printLineCount();
         isFinish = true;
     }
 }
