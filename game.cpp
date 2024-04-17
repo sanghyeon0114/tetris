@@ -10,6 +10,13 @@ Tetromino Game::getRandomTetromino() {
     return randomTetro[dis(gen)];
 }
 
+void Game::makeNextTetromino() {
+    tetro = next;
+    next = Game::getRandomTetromino();
+    tetroPosition[0] = (BOARD_WIDTH/2-tetro.size()/2)+1;
+    tetroPosition[1] = 1;
+}
+
 Game::Game() {
     for(int i = 0; i < BOARD_WIDTH; i++) {
         for(int j = 0; j < BOARD_HEIGHT; j++) {
@@ -26,11 +33,11 @@ Game::Game() {
     tetroPosition[1] = 1;
 }
 
-bool Game::checkTetrominoPosition(Tetromino tetro, int x) {
+bool Game::checkTetrominoPosition(Tetromino tetro, int x, int y) {
     for(int i = 0; i < tetro.size(); i++) {
         for(int j = 0; j < tetro.size(); j++) {
             if(tetro.check(i, j)) {
-                if(!(x+i >= 1 && x+i <= BOARD_WIDTH)) {
+                if(!(x+i >= 1 && x+i <= BOARD_WIDTH && y+j >= 1 && y+j <= BOARD_HEIGHT && !board_[x+i-1][y+j-1])) {
                     return false;
                 }
             }
@@ -45,29 +52,41 @@ void Game::inputKey() {
     } else if(console::key(console::K_OTHER)) {
 
     } else if(console::key(console::K_LEFT)) {
-        if(Game::checkTetrominoPosition(tetro, tetroPosition[0]-1)) {
+        if(Game::checkTetrominoPosition(tetro, tetroPosition[0]-1, tetroPosition[1])) {
             tetroPosition[0]--;
         }
     } else if(console::key(console::K_RIGHT)) {
-        if(Game::checkTetrominoPosition(tetro, tetroPosition[0]+1)) {
+        if(Game::checkTetrominoPosition(tetro, tetroPosition[0]+1, tetroPosition[1])) {
             tetroPosition[0]++;
         }
     } else if(console::key(console::K_UP)) {
 
     } else if(console::key(console::K_DOWN)) {
-
+        if(Game::checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1]+1)) {
+            tetroPosition[1]++;
+        }
     } else if(console::key(console::K_ESC)) {
         exit(0);
     } else if(console::key(console::K_SPACE)) {
-        
+        if(canHold) {
+            if(hold == nullptr) {
+                hold = tetro.original();
+                Game::makeNextTetromino();
+            } else {
+                Tetromino tmp = tetro;
+                tetro = *hold;
+                hold = tmp.original();
+            }
+            canHold = false;
+        }
     } else if(console::key(console::K_Z)) {
         Tetromino tmp = tetro.rotatedCCW();
-        if(Game::checkTetrominoPosition(tmp, tetroPosition[0])) {
+        if(Game::checkTetrominoPosition(tmp, tetroPosition[0], tetroPosition[1])) {
             tetro = tmp;
         }
     } else if(console::key(console::K_X)) {
         Tetromino tmp = tetro.rotatedCW();
-        if(Game::checkTetrominoPosition(tmp, tetroPosition[0])) {
+        if(Game::checkTetrominoPosition(tmp, tetroPosition[0], tetroPosition[1])) {
             tetro = tmp;
         }
     } else if(console::key(console::K_ENTER)) {
@@ -103,6 +122,30 @@ void Game::printHoldTetromino() {
     hold->drawAt(BLOCK_STRING, (holdBoxPos + (boxSize-hold->size())/2), hold->name().compare("I") == 0 ? 1 : 2);
 }
 
+void Game::printGroundTetromino() {
+    for(int i = 0; i < BOARD_WIDTH; i++) {
+        for(int j = 0; j < BOARD_HEIGHT; j++) {
+            if(board_[i][j]) {
+                console::draw(i+1, j+1, BLOCK_STRING);
+            }
+        }
+    }
+}
+
+void Game::printFinishedTetromino() {
+    for(int i = 0; i < tetro.size(); i++) {
+        for(int j = 0; j < tetro.size(); j++) {
+            if(tetro.check(i, j)) {
+                board_[tetroPosition[0]+i-1][tetroPosition[1]+j-1] = true;
+            }
+        }
+    }
+}
+
+bool Game::isTetrominoGround() {
+    return !checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1]+1);
+}
+
 // 게임의 한 프레임을 처리한다.
 void Game::update() {
     // input Code.
@@ -112,13 +155,23 @@ void Game::update() {
     Game::printTetromino();
     Game::printNextTetromino();
     Game::printHoldTetromino();
+    Game::printGroundTetromino();
 
     Game::inputKey();
     
     if(++tick == DROP_DELAY) {
         // input Code 2.
         tick = 0;
-        tetroPosition[1]++;
+        if(Game::isTetrominoGround()) {
+            Game::printFinishedTetromino();
+            Game::makeNextTetromino();
+            if(!Game::checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1])) {
+                // Todo : Lose!
+                exit(0);
+            }
+        } else {
+            tetroPosition[1]++;
+        }
     }
 }
 

@@ -20,16 +20,21 @@ private:
   Tetromino randomTetro[7] = {Tetromino::I, Tetromino::O, Tetromino::T, Tetromino::S, Tetromino::Z, Tetromino::J, Tetromino::L};
   Tetromino tetro = Tetromino::I, next = Tetromino::I, *hold;
   int tetroPosition[2];
+  bool canHold = true;
 
   Tetromino getRandomTetromino();
+  void makeNextTetromino();
 
-  bool checkTetrominoPosition(Tetromino tetro, int x);
+  bool checkTetrominoPosition(Tetromino tetro, int x, int y);
   void inputKey();
   void printLineCount(int lineCount);
   void printTime();
   void printTetromino();
   void printNextTetromino();
   void printHoldTetromino();
+  void printGroundTetromino();
+  void printFinishedTetromino();
+  bool isTetrominoGround();
 
   void drawGameBox();
   void drawNextBox();
