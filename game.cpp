@@ -3,8 +3,6 @@
 
 #include <random>
 
-// Todo 2 : Up 키 누르면 바로 설치
-
 Tetromino Game::getRandomTetromino() {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -71,7 +69,7 @@ void Game::inputKey() {
             tetroPosition[1]++;
         }
     } else if(console::key(console::K_ESC)) {
-        exit(0);
+        isFinish = true;
     } else if(console::key(console::K_SPACE)) {
         if(canHold) {
             if(hold == nullptr) {
@@ -106,7 +104,7 @@ void Game::printLineCount() {
     console::draw(0, BOARD_HEIGHT+2, result);
 }
 
-void Game::printTime() {
+std::string Game::getTime() {
     std::chrono::system_clock::time_point endTime = std::chrono::system_clock::now();
     std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     
@@ -131,6 +129,11 @@ void Game::printTime() {
     }
     result.append(std::to_string(millisecond));
     
+    return result;
+}
+
+void Game::printTime() {
+    std::string result = Game::getTime();
     console::draw(BOARD_WIDTH/2-result.length()/2+1, BOARD_HEIGHT+3, result);
 }   
 
@@ -212,10 +215,23 @@ bool Game::isTetrominoGround() {
     return !checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1]+1);
 }
 
+void Game::printWinMessage() {
+    std::string message = "You Win";
+    std::string time = Game::getTime();
+    console::draw(BOARD_WIDTH/2-message.length()/2+1, BOARD_HEIGHT/2, message);
+    console::draw(BOARD_WIDTH/2-message.length()/2, BOARD_HEIGHT/2+1, time);
+}
 
-// 게임의 한 프레임을 처리한다.
+void Game::printLostMessage() {
+    std::string message = "You Lost";
+    console::draw(BOARD_WIDTH/2-message.length()/2+1, BOARD_HEIGHT/2, message);
+}
+
+bool Game::isWin() {
+    return lineCount == 0;
+}
+
 void Game::update() {
-    // input Code.
     Game::printLineCount();
     Game::printTime();
 
@@ -234,13 +250,17 @@ void Game::update() {
             Game::removeLines();
             Game::makeNextTetromino();
             if(!Game::checkTetrominoPosition(tetro, tetroPosition[0], tetroPosition[1])) {
-                // Todo : Lose!
-                exit(0);
+                Game::printLostMessage();
+                isFinish = true;
             }
             canHold = true;
         } else {
             tetroPosition[1]++;
         }
+    }
+    if(Game::isWin()) {
+        Game::printWinMessage();
+        isFinish = true;
     }
 }
 
@@ -270,7 +290,6 @@ void Game::draw() {
     Game::drawHoldBox();
 }
 
-// 게임 루프가 종료되어야 하는지 여부를 반환한다.
 bool Game::shouldExit() {
-    return false;
+    return isFinish;
 }

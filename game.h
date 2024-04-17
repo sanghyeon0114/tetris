@@ -16,6 +16,7 @@ private:
   // board[x][y]가 true 인 경우 x, y 위치에 고정된 블록이 존재하는 것을 의미한다
   bool board_[BOARD_WIDTH][BOARD_HEIGHT];
   std::chrono::system_clock::time_point startTime;
+  bool isFinish = false;
   int tick;
   int lineCount;
   Tetromino randomTetro[7] = {Tetromino::I, Tetromino::O, Tetromino::T, Tetromino::S, Tetromino::Z, Tetromino::J, Tetromino::L};
@@ -30,6 +31,7 @@ private:
   bool checkTetrominoPosition(Tetromino tetro, int x, int y);
   void inputKey();
   void printLineCount();
+  std::string getTime();
   void printTime();
   void printTetromino();
   void printNextTetromino();
@@ -40,6 +42,11 @@ private:
   void removeLines();
   void printShadow();
   bool isTetrominoGround();
+
+  void printWinMessage();
+  void printLostMessage();
+
+  bool isWin();
 
   void drawGameBox();
   void drawNextBox();
