@@ -18,6 +18,7 @@ private:
   bool isFinish = false;
   int tick;
   int lineCount;
+  std::chrono::system_clock::time_point startTime;
   Tetromino randomTetro[7] = {Tetromino::I, Tetromino::O, Tetromino::T, Tetromino::S, Tetromino::Z, Tetromino::J, Tetromino::L};
   Tetromino tetro = Tetromino::I, next = Tetromino::I, *hold;
   int tetroPosition[2];

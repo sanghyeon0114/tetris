@@ -2,8 +2,7 @@
 #include "console/console.h"
 
 #include <random>
-
-std::chrono::system_clock::time_point startTime;
+#include <chrono>
 
 Tetromino Game::getRandomTetromino() {
     std::random_device rd;
