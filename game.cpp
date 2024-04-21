@@ -240,6 +240,12 @@ void Game::update() {
     Game::printHoldTetromino();
     Game::printGroundTetromino();
 
+    if(Game::isWin()) {
+        Game::printWinMessage();
+        Game::printLineCount();
+        isFinish = true;
+    }
+
     Game::inputKey();
     
     if(++tick >= DROP_DELAY) {
@@ -256,11 +262,6 @@ void Game::update() {
         } else {
             tetroPosition[1]++;
         }
-    }
-    if(Game::isWin()) {
-        Game::printWinMessage();
-        Game::printLineCount();
-        isFinish = true;
     }
 }
 
