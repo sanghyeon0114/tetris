@@ -3,6 +3,8 @@
 
 #include <random>
 
+std::chrono::system_clock::time_point startTime;
+
 Tetromino Game::getRandomTetromino() {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -24,7 +26,7 @@ Game::Game() {
         }
     }
     tick = 0;
-    lineCount = 40;
+    lineCount = LINES;
 
     tetro = Game::getRandomTetromino();
     next = Game::getRandomTetromino();
