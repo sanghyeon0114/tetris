@@ -32,7 +32,7 @@ Game::Game() {
     hold = nullptr;
     tetroPosition[0] = (BOARD_WIDTH/2-tetro.size()/2)+1;
     tetroPosition[1] = 1;
-    startTime = std::chrono::system_clock::now();
+    startTime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 bool Game::checkTetrominoPosition(Tetromino tetro, int x, int y) {
@@ -100,25 +100,26 @@ void Game::printLineCount() {
 }
 
 std::string Game::getTime() {
-    std::chrono::system_clock::time_point endTime = std::chrono::system_clock::now();
-    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-    
+    long long endTime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    std::chrono::duration<long long, std::nano> ns(endTime - startTime);
+    std::chrono::duration<long long, std::micro> ms = std::chrono::duration_cast<std::chrono::microseconds>(ns);
+
     std::string result;
-    int minutes = ((ms.count()/1000)/60);
+    int minutes = ((ms.count()/1000000)/60);
     if(minutes < 10) {
         result.append("0");
     }
     result.append(std::to_string(minutes));
     result.append(":");
 
-    int second = (ms.count()/1000)%60;
+    int second = (ms.count()/1000000)%60;
     if(second < 10) {
         result.append("0");
     }
     result.append(std::to_string(second));
     result.append(".");
 
-    int millisecond = (ms.count()/10)%100;
+    int millisecond = (ms.count()/10000)%100;
     if(millisecond < 10) {
         result.append("0");
     }
