@@ -1,14 +1,13 @@
 #include "game.h"
 #include "console/console.h"
 
+#include <ctime>
 #include <random>
 #include <chrono>
 
 Tetromino Game::getRandomTetromino() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dis(0, 6);
-    return randomTetro[dis(gen)];
+    srand(time(NULL));
+    return randomTetro[rand() % 7];
 }
 
 void Game::makeNextTetromino() {
